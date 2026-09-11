@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GENERAL PAPER trial Quiz</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .password-gate {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f4f7fb;
+      padding: 20px;
+    }
+
+    .password-box {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border: 1px solid #d9e4f2;
+      border-radius: 14px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .password-box h2 {
+      color: #063970;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .password-box p {
+      font-size: 16px;
+      color: #333333;
+      margin-bottom: 15px;
+    }
+
+    .password-box input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      margin: 20px 0;
+      border: 1px solid #bbbbbb;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .password-box button {
+      background: #063970;
+      color: #ffffff;
+      border: none;
+      padding: 13px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .password-box button:hover {
+      background: #052c56;
+    }
+
+    .password-error {
+      color: red;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="passwordGate" class="password-gate">
+    <div class="password-box">
+      <h2>Enter Quiz Password</h2>
+      <p>Please enter the EliteNurses password to access the quiz.</p>
+
+      <input 
+        type="password" 
+        id="quizPassword" 
+        placeholder="Enter password" 
+      />
+
+      <button id="unlockQuizBtn">Open Quiz</button>
+
+      <p id="passwordError" class="password-error"></p>
+    </div>
+  </div>
+
+  <div id="quizContent" class="quiz-container" style="display: none;">
+
+    <header class="quiz-header">
+      <h1>Pre-NMC Trial Quiz</h1>
+      <p id="course-title">Paediatric and Obstetrics Anatomy and Physiology Practice Questions</p>
+    </header>
+
+    <section id="start-screen" class="start-card">
+      <h2>Quiz Instructions</h2>
+
+      <div class="quiz-info">
+        <p><strong>Course:</strong> Paediatric and Obstetrics Anatomy and Physiology</p>
+        <p><strong id="total-questions-label">Questions:</strong></p>
+        <p><strong>Time:</strong> 180 minutes</p>
+        <p><strong>Instruction:</strong> Select the best answer for each question.</p>
+        <p><strong>Note:</strong> Do not refresh the page after starting the quiz.</p>
+      </div>
+
+      <button id="start-btn" class="primary-btn">Start Quiz</button>
+    </section>
+
+    <section id="quiz-screen" class="hidden">
+
+      <div class="top-bar">
+        <div id="timer">Time Left: 180:00</div>
+        <div id="progress-text">Question 1 of 180</div>
+      </div>
+
+      <div class="progress-container">
+        <div id="progress-bar"></div>
+      </div>
+
+      <div id="question-nav"></div>
+
+      <div id="quiz-box">
+        <h2 id="question-number"></h2>
+        <p id="question-text"></p>
+
+        <div id="options"></div>
+
+        <div class="buttons">
+          <button id="prev-btn">Previous</button>
+          <button id="next-btn">Next</button>
+          <button id="submit-btn">Submit Quiz</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="result-box" class="hidden">
+      <h2>Your Result</h2>
+      <div id="result-summary"></div>
+      <button id="review-btn" class="primary-btn">Review Answers</button>
+    </section>
+
+    <section id="review-box" class="hidden"></section>
+
+    <footer class="quiz-footer">
+      Prepared for Nursing Licensure Examination Revision
+    </footer>
+
+  </div>
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+
+  <script>
+    const correctPassword = "EliteNurses@2026";
+
+    const passwordGate = document.getElementById("passwordGate");
+    const quizContent = document.getElementById("quizContent");
+    const quizPassword = document.getElementById("quizPassword");
+    const unlockQuizBtn = document.getElementById("unlockQuizBtn");
+    const passwordError = document.getElementById("passwordError");
+
+    function unlockQuiz() {
+      const enteredPassword = quizPassword.value.trim();
+
+      if (enteredPassword === correctPassword) {
+        passwordGate.style.display = "none";
+        quizContent.style.display = "block";
+        sessionStorage.setItem("quizUnlocked", "true");
+      } else {
+        passwordError.textContent = "Incorrect password. Please try again.";
+        quizPassword.value = "";
+        quizPassword.focus();
+      }
+    }
+
+    unlockQuizBtn.addEventListener("click", unlockQuiz);
+
+    quizPassword.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        unlockQuiz();
+      }
+    });
+
+    if (sessionStorage.getItem("quizUnlocked") === "true") {
+      passwordGate.style.display = "none";
+      quizContent.style.display = "block";
+    }
+  </script>
+
+</body>
+</html>
