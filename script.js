@@ -3,7 +3,9 @@ let userAnswers = {};
 let quizSubmitted = false;
 
 const TIME_LIMIT_MINUTES = 100;
-let timeRemaining = TIME_LIMIT_MINUTES * 20;
+const SECONDS_PER_MINUTE = 60;
+
+let timeRemaining = TIME_LIMIT_MINUTES * SECONDS_PER_MINUTE;
 let timerInterval = null;
 
 const startScreen = document.getElementById("start-screen");
@@ -27,10 +29,16 @@ const timerDisplay = document.getElementById("timer");
 const progressText = document.getElementById("progress-text");
 const progressBar = document.getElementById("progress-bar");
 const questionNav = document.getElementById("question-nav");
-const totalQuestionsLabel = document.getElementById("total-questions-label");
+const totalQuestionsLabel = document.getElementById(
+  "total-questions-label"
+);
 
 function initializeQuiz() {
-  if (typeof questions === "undefined" || !Array.isArray(questions) || questions.length === 0) {
+  if (
+    typeof questions === "undefined" ||
+    !Array.isArray(questions) ||
+    questions.length === 0
+  ) {
     startScreen.innerHTML = `
       <h2>Questions could not be loaded</h2>
       <p>Please check your questions.js file.</p>
@@ -40,6 +48,7 @@ function initializeQuiz() {
 
   totalQuestionsLabel.textContent = `Questions: ${questions.length}`;
   progressText.textContent = `Question 1 of ${questions.length}`;
+
   updateTimerDisplay();
   createQuestionNavigation();
 }
@@ -62,59 +71,94 @@ function startTimer() {
   timerInterval = setInterval(function () {
     if (quizSubmitted) {
       clearInterval(timerInterval);
-      return;
-    }
-
-    if (timeRemaining <= 0) {
-      clearInterval(timerInterval);
-      alert("Time is up! Your quiz will be submitted automatically.");
-      submitQuiz(true);
+      timerInterval = null;
       return;
     }
 
     timeRemaining--;
     updateTimerDisplay();
+
+    if (timeRemaining <= 0) {
+      timeRemaining = 0;
+      updateTimerDisplay();
+
+      clearInterval(timerInterval);
+      timerInterval = null;
+
+      alert(
+        "Time is up! Your quiz will be submitted automatically."
+      );
+
+      submitQuiz(true);
+    }
   }, 1000);
 }
 
 function updateTimerDisplay() {
-  const minutes = Math.floor(timeRemaining / 20);
-  const seconds = timeRemaining % 20;
+  const minutes = Math.floor(
+    timeRemaining / SECONDS_PER_MINUTE
+  );
 
-  timerDisplay.textContent = `Time Left: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  const seconds =
+    timeRemaining % SECONDS_PER_MINUTE;
+
+  timerDisplay.textContent =
+    `Time Left: ${minutes}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
 }
 
 function loadQuestion() {
   const q = questions[currentQuestion];
 
-  questionNumber.textContent = `Question ${currentQuestion + 1}`;
+  questionNumber.textContent =
+    `Question ${currentQuestion + 1}`;
+
   questionText.textContent = q.question;
 
   optionsBox.innerHTML = "";
 
   for (let key in q.options) {
     const option = document.createElement("label");
+
     option.className = "option";
 
     option.innerHTML = `
-      <input type="radio" name="answer" value="${key}" 
-      ${userAnswers[currentQuestion] === key ? "checked" : ""}>
+      <input
+        type="radio"
+        name="answer"
+        value="${key}"
+        ${userAnswers[currentQuestion] === key
+          ? "checked"
+          : ""}
+      >
       ${key}. ${q.options[key]}
     `;
 
     optionsBox.appendChild(option);
   }
 
-  document.querySelectorAll("input[name='answer']").forEach(function (input) {
-    input.addEventListener("change", function () {
-      userAnswers[currentQuestion] = this.value;
-      updateQuestionNavigation();
-      updateProgress();
-    });
-  });
+  document
+    .querySelectorAll("input[name='answer']")
+    .forEach(function (input) {
+      input.addEventListener("change", function () {
+        userAnswers[currentQuestion] = this.value;
 
-  prevBtn.style.display = currentQuestion === 0 ? "none" : "inline-block";
-  nextBtn.style.display = currentQuestion === questions.length - 1 ? "none" : "inline-block";
+        updateQuestionNavigation();
+        updateProgress();
+      });
+    });
+
+  prevBtn.style.display =
+    currentQuestion === 0
+      ? "none"
+      : "inline-block";
+
+  nextBtn.style.display =
+    currentQuestion === questions.length - 1
+      ? "none"
+      : "inline-block";
+
   submitBtn.style.display = "inline-block";
 
   updateProgress();
@@ -122,12 +166,20 @@ function loadQuestion() {
 }
 
 function updateProgress() {
-  const answeredCount = Object.keys(userAnswers).length;
-  const totalQuestions = questions.length;
-  const progressPercent = ((currentQuestion + 1) / totalQuestions) * 100;
+  const answeredCount =
+    Object.keys(userAnswers).length;
 
-  progressText.textContent = `Question ${currentQuestion + 1} of ${totalQuestions} | Answered: ${answeredCount}`;
-  progressBar.style.width = `${progressPercent}%`;
+  const totalQuestions = questions.length;
+
+  const progressPercent =
+    ((currentQuestion + 1) / totalQuestions) * 100;
+
+  progressText.textContent =
+    `Question ${currentQuestion + 1} of ${totalQuestions}` +
+    ` | Answered: ${answeredCount}`;
+
+  progressBar.style.width =
+    `${progressPercent}%`;
 }
 
 function createQuestionNavigation() {
@@ -135,14 +187,20 @@ function createQuestionNavigation() {
 
   questions.forEach(function (_, index) {
     const btn = document.createElement("button");
+
     btn.textContent = index + 1;
     btn.className = "nav-btn";
     btn.type = "button";
 
     btn.addEventListener("click", function () {
       currentQuestion = index;
+
       loadQuestion();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
     });
 
     questionNav.appendChild(btn);
@@ -150,7 +208,8 @@ function createQuestionNavigation() {
 }
 
 function updateQuestionNavigation() {
-  const navButtons = document.querySelectorAll(".nav-btn");
+  const navButtons =
+    document.querySelectorAll(".nav-btn");
 
   navButtons.forEach(function (btn, index) {
     btn.classList.remove("current", "answered");
@@ -168,22 +227,35 @@ function updateQuestionNavigation() {
 function goToNextQuestion() {
   if (currentQuestion < questions.length - 1) {
     currentQuestion++;
+
     loadQuestion();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   }
 }
 
 function goToPreviousQuestion() {
   if (currentQuestion > 0) {
     currentQuestion--;
+
     loadQuestion();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   }
 }
 
 function confirmSubmit() {
-  const answeredCount = Object.keys(userAnswers).length;
-  const unansweredCount = questions.length - answeredCount;
+  const answeredCount =
+    Object.keys(userAnswers).length;
+
+  const unansweredCount =
+    questions.length - answeredCount;
 
   const confirmMessage =
     `Are you sure you want to submit?\n\n` +
@@ -199,7 +271,11 @@ function submitQuiz(autoSubmitted) {
   if (quizSubmitted) return;
 
   quizSubmitted = true;
-  clearInterval(timerInterval);
+
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
 
   let score = 0;
 
@@ -210,47 +286,116 @@ function submitQuiz(autoSubmitted) {
   });
 
   const totalQuestions = questions.length;
-  const answeredCount = Object.keys(userAnswers).length;
-  const unanswered = totalQuestions - answeredCount;
-  const wrongAnswers = answeredCount - score;
-  const percentage = ((score / totalQuestions) * 100).toFixed(1);
-  const timeUsedSeconds = TIME_LIMIT_MINUTES * 20 - timeRemaining;
-  const timeUsed = formatTime(timeUsedSeconds);
-  const grade = getGrade(percentage);
+
+  const answeredCount =
+    Object.keys(userAnswers).length;
+
+  const unanswered =
+    totalQuestions - answeredCount;
+
+  const wrongAnswers =
+    answeredCount - score;
+
+  const percentage =
+    ((score / totalQuestions) * 100).toFixed(1);
+
+  const timeUsedSeconds =
+    TIME_LIMIT_MINUTES * SECONDS_PER_MINUTE -
+    timeRemaining;
+
+  const timeUsed =
+    formatTime(timeUsedSeconds);
+
+  const grade =
+    getGrade(percentage);
 
   quizScreen.classList.add("hidden");
   resultBox.classList.remove("hidden");
 
   resultSummary.innerHTML = `
     <div class="result-card">
-      <p><strong>Score:</strong> ${score} / ${totalQuestions}</p>
-      <p><strong>Percentage:</strong> ${percentage}%</p>
-      <p><strong>Grade:</strong> ${grade}</p>
-      <p><strong>Correct Answers:</strong> ${score}</p>
-      <p><strong>Wrong Answers:</strong> ${wrongAnswers}</p>
-      <p><strong>Unanswered:</strong> ${unanswered}</p>
-      <p><strong>Time Used:</strong> ${timeUsed}</p>
-      <p><strong>Submission:</strong> ${autoSubmitted ? "Automatically submitted when time ended" : "Submitted by student"}</p>
+      <p>
+        <strong>Score:</strong>
+        ${score} / ${totalQuestions}
+      </p>
+
+      <p>
+        <strong>Percentage:</strong>
+        ${percentage}%
+      </p>
+
+      <p>
+        <strong>Grade:</strong>
+        ${grade}
+      </p>
+
+      <p>
+        <strong>Correct Answers:</strong>
+        ${score}
+      </p>
+
+      <p>
+        <strong>Wrong Answers:</strong>
+        ${wrongAnswers}
+      </p>
+
+      <p>
+        <strong>Unanswered:</strong>
+        ${unanswered}
+      </p>
+
+      <p>
+        <strong>Time Used:</strong>
+        ${timeUsed}
+      </p>
+
+      <p>
+        <strong>Submission:</strong>
+        ${
+          autoSubmitted
+            ? "Automatically submitted when time ended"
+            : "Submitted by student"
+        }
+      </p>
     </div>
   `;
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
-function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 20);
-  const remainingSeconds = seconds % 20;
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(
+    totalSeconds / SECONDS_PER_MINUTE
+  );
 
-  return `${minutes} minutes ${remainingSeconds} seconds`;
+  const seconds =
+    totalSeconds % SECONDS_PER_MINUTE;
+
+  return `${minutes} minutes ${seconds} seconds`;
 }
 
 function getGrade(percentage) {
   percentage = Number(percentage);
 
-  if (percentage >= 80) return "Excellent";
-  if (percentage >= 70) return "Very Good";
-  if (percentage >= 60) return "Good";
-  if (percentage >= 50) return "Fair";
+  if (percentage >= 80) {
+    return "Excellent";
+  }
+
+  if (percentage >= 70) {
+    return "Very Good";
+  }
+
+  if (percentage >= 60) {
+    return "Good";
+  }
+
+  if (percentage >= 50) {
+    return "Fair";
+  }
+
   return "Needs More Revision";
 }
 
@@ -258,13 +403,19 @@ function reviewAnswers() {
   resultBox.classList.add("hidden");
   reviewBox.classList.remove("hidden");
 
-  reviewBox.innerHTML = "<h2>Answer Review</h2>";
+  reviewBox.innerHTML =
+    "<h2>Answer Review</h2>";
 
   questions.forEach(function (q, index) {
-    const userAnswer = userAnswers[index] || "Not answered";
-    const correctAnswer = q.correctAnswer;
+    const userAnswer =
+      userAnswers[index] || "Not answered";
 
-    const item = document.createElement("div");
+    const correctAnswer =
+      q.correctAnswer;
+
+    const item =
+      document.createElement("div");
+
     item.className = "review-item";
 
     const userAnswerText =
@@ -274,37 +425,95 @@ function reviewAnswers() {
 
     item.innerHTML = `
       <h3>Question ${index + 1}</h3>
+
       <p>${q.question}</p>
 
-      <p><strong>Your Answer:</strong> 
-      <span class="${userAnswer === correctAnswer ? "correct" : "wrong"}">${userAnswerText}</span></p>
+      <p>
+        <strong>Your Answer:</strong>
 
-      <p><strong>Correct Answer:</strong> 
-      <span class="correct">${correctAnswer}. ${q.options[correctAnswer]}</span></p>
+        <span class="${
+          userAnswer === correctAnswer
+            ? "correct"
+            : "wrong"
+        }">
+          ${userAnswerText}
+        </span>
+      </p>
 
-      <p><strong>Rationale for Correct Answer:</strong> ${q.rationaleCorrect}</p>
+      <p>
+        <strong>Correct Answer:</strong>
 
-      <p><strong>Why Other Options Are Incorrect:</strong></p>
+        <span class="correct">
+          ${correctAnswer}.
+          ${q.options[correctAnswer]}
+        </span>
+      </p>
+
+      <p>
+        <strong>Rationale for Correct Answer:</strong>
+        ${q.rationaleCorrect}
+      </p>
+
+      <p>
+        <strong>Why Other Options Are Incorrect:</strong>
+      </p>
+
       <ul>
-        ${Object.keys(q.options).map(function (key) {
-          if (key !== correctAnswer) {
-            return `<li><strong>${key}. ${q.options[key]}:</strong> ${q.rationalesIncorrect[key] || "No rationale provided."}</li>`;
-          }
-          return "";
-        }).join("")}
+        ${Object.keys(q.options)
+          .map(function (key) {
+            if (key !== correctAnswer) {
+              return `
+                <li>
+                  <strong>
+                    ${key}. ${q.options[key]}:
+                  </strong>
+
+                  ${
+                    q.rationalesIncorrect[key] ||
+                    "No rationale provided."
+                  }
+                </li>
+              `;
+            }
+
+            return "";
+          })
+          .join("")}
       </ul>
     `;
 
     reviewBox.appendChild(item);
   });
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
-startBtn.addEventListener("click", startQuiz);
-nextBtn.addEventListener("click", goToNextQuestion);
-prevBtn.addEventListener("click", goToPreviousQuestion);
-submitBtn.addEventListener("click", confirmSubmit);
-reviewBtn.addEventListener("click", reviewAnswers);
+startBtn.addEventListener(
+  "click",
+  startQuiz
+);
+
+nextBtn.addEventListener(
+  "click",
+  goToNextQuestion
+);
+
+prevBtn.addEventListener(
+  "click",
+  goToPreviousQuestion
+);
+
+submitBtn.addEventListener(
+  "click",
+  confirmSubmit
+);
+
+reviewBtn.addEventListener(
+  "click",
+  reviewAnswers
+);
 
 initializeQuiz();
