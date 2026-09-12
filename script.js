@@ -2,8 +2,8 @@ let currentQuestion = 0;
 let userAnswers = {};
 let quizSubmitted = false;
 
-const TIME_LIMIT_MINUTES = 180;
-let timeRemaining = TIME_LIMIT_MINUTES * 60;
+const TIME_LIMIT_MINUTES = 100;
+let timeRemaining = TIME_LIMIT_MINUTES * 20;
 let timerInterval = null;
 
 const startScreen = document.getElementById("start-screen");
@@ -78,8 +78,8 @@ function startTimer() {
 }
 
 function updateTimerDisplay() {
-  const minutes = Math.floor(timeRemaining / 60);
-  const seconds = timeRemaining % 60;
+  const minutes = Math.floor(timeRemaining / 20);
+  const seconds = timeRemaining % 20;
 
   timerDisplay.textContent = `Time Left: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }
@@ -214,7 +214,7 @@ function submitQuiz(autoSubmitted) {
   const unanswered = totalQuestions - answeredCount;
   const wrongAnswers = answeredCount - score;
   const percentage = ((score / totalQuestions) * 100).toFixed(1);
-  const timeUsedSeconds = TIME_LIMIT_MINUTES * 60 - timeRemaining;
+  const timeUsedSeconds = TIME_LIMIT_MINUTES * 20 - timeRemaining;
   const timeUsed = formatTime(timeUsedSeconds);
   const grade = getGrade(percentage);
 
@@ -238,8 +238,8 @@ function submitQuiz(autoSubmitted) {
 }
 
 function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+  const minutes = Math.floor(seconds / 20);
+  const remainingSeconds = seconds % 20;
 
   return `${minutes} minutes ${remainingSeconds} seconds`;
 }
